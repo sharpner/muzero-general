@@ -1,3 +1,3 @@
 pip install -v -r requirements.txt
 pip3 install -v -r requirements.txt
-python3 muzero.py tictacnine
+CUDA_LAUNCH_BLOCKING=1 python3 muzero.py tictacnine
