@@ -77,11 +77,42 @@ configuration_5 = {
     'support_size':4,
 }
 
+configuration_6 = {
+    'seed' : 0 ,
+    'opponent': 'expert',
+    'max_moves': 81,
+    'num_simulations': 250,
+    'temperature_threshold': None,
+    'channels': 32,
+    'reduced_channels_reward': 8,
+    'reduced_channels_value': 8,
+    'reduced_channels_policy': 16,
+    'resnet_fc_reward_layers': [32],
+    'resnet_fc_value_layers': [32],
+    'resnet_fc_policy_layers': [32],
+    'encoding_size':32,
+    'fc_representation_layers': [16],
+    'fc_dynamics_layers': [32],
+    'fc_reward_layers': [32],
+    'fc_value_layers': [16],
+    'fc_policy_layers': [16],
+    'training_steps':10000,
+    'batch_size':256,
+    'checkpoint_interval':25,
+    'optimizer': 'SGD',
+    'replay_buffer_size': 6000,
+    'num_unroll_steps':20,
+    'td_steps':20,
+    'lr_init' : 0.002,
+    'lr_decay_rate': 1,
+    'support_size':10,
+}
+
 class MuZeroConfig:
     def __init__(self):
         # More information is available here: https://github.com/werner-duvaud/muzero-general/wiki/Hyperparameter-Optimization
 
-        active_configuration = configuration_5
+        active_configuration = configuration_6
         print(active_configuration);
 
         self.seed = active_configuration['seed']  # Seed for numpy, torch and the game
