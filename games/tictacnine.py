@@ -44,6 +44,7 @@ configuration_4 = {
     'lr_init' : 0.003,
     'lr_decay_rate': 1,
     'support_size':10,
+    'codename':  'vergessen',
 }
 
 configuration_5 = {
@@ -75,6 +76,7 @@ configuration_5 = {
     'lr_init' : 0.002,
     'lr_decay_rate': 0.997,
     'support_size':4,
+    'codename': 'suckt',
 }
 
 configuration_6 = {
@@ -91,11 +93,6 @@ configuration_6 = {
     'resnet_fc_value_layers': [32],
     'resnet_fc_policy_layers': [32],
     'encoding_size':32,
-    'fc_representation_layers': [16],
-    'fc_dynamics_layers': [32],
-    'fc_reward_layers': [32],
-    'fc_value_layers': [16],
-    'fc_policy_layers': [16],
     'training_steps':25000,
     'batch_size':256,
     'checkpoint_interval':25,
@@ -106,6 +103,7 @@ configuration_6 = {
     'lr_init' : 0.002,
     'lr_decay_rate': 1,
     'support_size':10,
+    'codename':'gpu',
 }
 
 class MuZeroConfig:
@@ -169,7 +167,7 @@ class MuZeroConfig:
         self.fc_policy_layers = active_configuration['fc_policy_layers']  # Define the hidden layers in the policy network
 
         ### Training
-        self.results_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../results", os.path.basename(__file__)[:-3], datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S"))  # Path to store the model weights and TensorBoard logs
+        self.results_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../results", os.path.basename(__file__)[:-3], active_configuration['codename'], datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S"))  # Path to store the model weights and TensorBoard logs
         self.save_model = True  # Save the checkpoint in results_path as model.checkpoint
         self.training_steps = active_configuration['training_steps']# Total number of training steps (ie weights update according to a batch)
         self.batch_size = active_configuration['batch_size']# Number of parts of games to train on at each training step
@@ -353,7 +351,9 @@ class TicTacNine:
 
         reward = 1 if self.have_winner() else 0
 
-        # @TODO maybe improvement? grant a few points if game is draw?
+        if reward == 0 and len(self.legal_actions()) == 0:
+        # maybe improvement? grant a few points if game is draw?
+            reward = 0.1
 
         self.player *= -1
 
