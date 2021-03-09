@@ -84,9 +84,9 @@ configuration_6 = {
     'num_simulations': 250,
     'temperature_threshold': None,
     'channels': 32,
-    'reduced_channels_reward': 8,
-    'reduced_channels_value': 8,
-    'reduced_channels_policy': 16,
+    'reduced_channels_reward': 16,
+    'reduced_channels_value': 16,
+    'reduced_channels_policy': 32,
     'resnet_fc_reward_layers': [32],
     'resnet_fc_value_layers': [32],
     'resnet_fc_policy_layers': [32],
@@ -96,13 +96,13 @@ configuration_6 = {
     'fc_reward_layers': [32],
     'fc_value_layers': [16],
     'fc_policy_layers': [16],
-    'training_steps':10000,
+    'training_steps':25000,
     'batch_size':256,
     'checkpoint_interval':25,
     'optimizer': 'SGD',
     'replay_buffer_size': 6000,
-    'num_unroll_steps':20,
-    'td_steps':20,
+    'num_unroll_steps':30,
+    'td_steps':30,
     'lr_init' : 0.002,
     'lr_decay_rate': 1,
     'support_size':10,
@@ -196,7 +196,6 @@ class MuZeroConfig:
         # Reanalyze (See paper appendix Reanalyse)
         self.use_last_model_value = True  # Use the last model to provide a fresher, stable n-step value (See paper appendix Reanalyze)
         self.reanalyse_on_gpu = False
-
 
 
         ### Adjust the self play / training ratio to avoid over/underfitting
