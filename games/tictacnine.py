@@ -111,11 +111,43 @@ configuration_6 = {
     'codename':'gpu',
 }
 
+configuration_7 = {
+    'seed' : 0 ,
+    'opponent': 'expert',
+    'max_moves': 81,
+    'num_simulations': 150,
+    'temperature_threshold': None,
+    'channels': 32,
+    'reduced_channels_reward': 16,
+    'reduced_channels_value': 16,
+    'reduced_channels_policy': 32,
+    'resnet_fc_reward_layers': [32],
+    'resnet_fc_value_layers': [32],
+    'resnet_fc_policy_layers': [32],
+    'encoding_size':32,
+    'fc_representation_layers': [32],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [32],
+    'fc_policy_layers': [32],
+    'training_steps':25000,
+    'batch_size':64,
+    'checkpoint_interval':25,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 6000,
+    'num_unroll_steps':30,
+    'td_steps':30,
+    'lr_init' : 0.002,
+    'lr_decay_rate': 1,
+    'support_size':10,
+    'codename':'stacked_advanced',
+}
+
 class MuZeroConfig:
     def __init__(self):
         # More information is available here: https://github.com/werner-duvaud/muzero-general/wiki/Hyperparameter-Optimization
 
-        active_configuration = configuration_6
+        active_configuration = configuration_7
         print(active_configuration);
 
         self.seed = active_configuration['seed']  # Seed for numpy, torch and the game
@@ -125,7 +157,7 @@ class MuZeroConfig:
         self.observation_shape = (3, 9,9)  # Dimensions of the game observation, must be 3D (channel, height, width). For a 1D array, please reshape it to (1, 1, length of array)
         self.action_space = list(range(9 * 9))  # Fixed list of all possible actions. You should only edit the length
         self.players = list(range(2))  # List of players. You should only edit the length
-        self.stacked_observations = 0  # Number of previous observations and previous actions to add to the current observation
+        self.stacked_observations = 2  # Number of previous observations and previous actions to add to the current observation
 
         # Evaluate
         self.muzero_player = 0  # Turn Muzero begins to play (0: MuZero plays first, 1: MuZero plays second)
@@ -356,9 +388,9 @@ class TicTacNine:
 
         reward = 1 if self.have_winner() else 0
 
-        if reward == 0 and len(self.legal_actions()) == 0:
+        # if reward == 0 and len(self.legal_actions()) == 0:
         # maybe improvement? grant a few points if game is draw?
-            reward = 0.1
+            # reward = 0.1
 
         self.player *= -1
 
