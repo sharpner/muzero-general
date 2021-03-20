@@ -45,6 +45,7 @@ configuration_4 = {
     'lr_decay_rate': 1,
     'support_size':10,
     'codename':  'vergessen',
+    'stacked_observations':0,
 }
 
 configuration_5 = {
@@ -77,6 +78,7 @@ configuration_5 = {
     'lr_decay_rate': 0.997,
     'support_size':4,
     'codename': 'suckt',
+    'stacked_observations':0,
 }
 
 configuration_6 = {
@@ -109,6 +111,7 @@ configuration_6 = {
     'lr_decay_rate': 1,
     'support_size':10,
     'codename':'gpu',
+    'stacked_observations':0,
 }
 
 configuration_7 = {
@@ -140,14 +143,80 @@ configuration_7 = {
     'lr_init' : 0.002,
     'lr_decay_rate': 1,
     'support_size':10,
-    'codename':'stacked_advanced',
+    'codename':'stacked_advanced_32',
+    'stacked_observations':80,
 }
 
+configuration_8 = {
+    'seed' : 0 ,
+    'opponent': 'expert',
+    'max_moves': 81,
+    'num_simulations': 300,
+    'temperature_threshold': None,
+    'channels': 32,
+    'reduced_channels_reward': 16,
+    'reduced_channels_value': 16,
+    'reduced_channels_policy': 32,
+    'resnet_fc_reward_layers': [32],
+    'resnet_fc_value_layers': [32],
+    'resnet_fc_policy_layers': [32],
+    'encoding_size':32,
+    'fc_representation_layers': [32],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [32],
+    'fc_policy_layers': [32],
+    'training_steps':25000,
+    'batch_size':64,
+    'checkpoint_interval':50,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 6000,
+    'num_unroll_steps': 80,
+    'td_steps': 80,
+    'lr_init' : 0.002,
+    'lr_decay_rate': 1,
+    'support_size':10,
+    'codename':'agatheBower',
+    'stacked_observations':80,
+}
+
+configuration_gpu = {
+    'seed' : 0 ,
+    'opponent': 'expert',
+    'max_moves': 81,
+    'num_simulations': 200,
+    'temperature_threshold': None,
+    'channels': 32,
+    'reduced_channels_reward': 8,
+    'reduced_channels_value': 8,
+    'reduced_channels_policy': 16,
+    'resnet_fc_reward_layers': [16],
+    'resnet_fc_value_layers': [16],
+    'resnet_fc_policy_layers': [16],
+    'encoding_size':16,
+    'fc_representation_layers': [16],
+    'fc_dynamics_layers': [32],
+    'fc_reward_layers': [32],
+    'fc_value_layers': [16],
+    'fc_policy_layers': [16],
+    'training_steps':100000,
+    'batch_size':32,
+    'checkpoint_interval':50,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 6000,
+    'num_unroll_steps': 80,
+    'td_steps': 80,
+    'lr_init' : 0.002,
+    'lr_decay_rate': 1,
+    'support_size':10,
+    'codename':'tschipiu',
+    'stacked_observations':80,
+}
 class MuZeroConfig:
     def __init__(self):
         # More information is available here: https://github.com/werner-duvaud/muzero-general/wiki/Hyperparameter-Optimization
 
-        active_configuration = configuration_7
+        active_configuration = configuration_8
         print(active_configuration);
 
         self.seed = active_configuration['seed']  # Seed for numpy, torch and the game
@@ -157,7 +226,7 @@ class MuZeroConfig:
         self.observation_shape = (3, 9,9)  # Dimensions of the game observation, must be 3D (channel, height, width). For a 1D array, please reshape it to (1, 1, length of array)
         self.action_space = list(range(9 * 9))  # Fixed list of all possible actions. You should only edit the length
         self.players = list(range(2))  # List of players. You should only edit the length
-        self.stacked_observations = 2  # Number of previous observations and previous actions to add to the current observation
+        self.stacked_observations = active_configuration['stacked_observations']  # Number of previous observations and previous actions to add to the current observation
 
         # Evaluate
         self.muzero_player = 0  # Turn Muzero begins to play (0: MuZero plays first, 1: MuZero plays second)
