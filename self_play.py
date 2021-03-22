@@ -61,6 +61,7 @@ class SelfPlay:
                     False,
                     "self" if len(self.config.players) == 1 else self.config.opponent,
                     self.config.muzero_player,
+                    test_mode=test_mode,
                 )
 
                 # Save to the shared storage
@@ -110,7 +111,7 @@ class SelfPlay:
         self.close_game()
 
     def play_game(
-        self, temperature, temperature_threshold, render, opponent, muzero_player
+        self, temperature, temperature_threshold, render, opponent, muzero_player,test_mode=False
     ):
         """
         Play one game with actions based on the Monte Carlo tree search at each moves.
@@ -150,6 +151,7 @@ class SelfPlay:
                         self.game.legal_actions(),
                         self.game.to_play(),
                         True,
+                        test_mode=test_mode
                     )
                     action = self.select_action(
                         root,
@@ -268,6 +270,7 @@ class MCTS:
         to_play,
         add_exploration_noise,
         override_root_with=None,
+        test_mode=False,
     ):
         """
         At the root of the search tree we use the representation function to obtain a
@@ -281,7 +284,7 @@ class MCTS:
         else:
             root = Node(0)
             observation = (
-                torch.tensor(observation, device=next(model.parameters()).device, dtype=torch.float32)
+                    torch.tensor(observation, device="cpu" if test_mode == True else next(model.parameters()).device, dtype=torch.float32)
                 .unsqueeze(0)
             )
             (
