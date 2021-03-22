@@ -147,9 +147,7 @@ class MuZeroFullyConnectedNetwork(AbstractNetwork):
     def dynamics(self, encoded_state, action):
         # Stack encoded_state with a game specific one hot encoded action (See paper appendix Network Architecture)
         action_one_hot = (
-            torch.zeros((action.shape[0], self.action_space_size))
-            .to(action.device)
-            .float()
+            torch.zeros((action.shape[0], self.action_space_size), device=action.device, dtype=torch.float32)
         )
         action_one_hot.scatter_(1, action.long(), 1.0)
         x = torch.cat((encoded_state, action_one_hot), dim=1)
@@ -175,10 +173,10 @@ class MuZeroFullyConnectedNetwork(AbstractNetwork):
         # reward equal to 0 for consistency
         reward = torch.log(
             (
-                torch.zeros(1, self.full_support_size)
+                torch.zeros(1, self.full_support_size, device=observation.device)
                 .scatter(1, torch.tensor([[self.full_support_size // 2]]).long(), 1.0)
                 .repeat(len(observation), 1)
-                .to(observation.device)
+                # .to(observation.device)
             )
         )
 
@@ -557,10 +555,10 @@ class MuZeroResidualNetwork(AbstractNetwork):
                     1,
                     encoded_state.shape[2],
                     encoded_state.shape[3],
-                )
+                ),
+                device=action.device,
+                dtype=torch.float32
             )
-            .to(action.device)
-            .float()
         )
         action_one_hot = (
             action[:, :, None, None] * action_one_hot / self.action_space_size
@@ -600,10 +598,10 @@ class MuZeroResidualNetwork(AbstractNetwork):
         # reward equal to 0 for consistency
         reward = torch.log(
             (
-                torch.zeros(1, self.full_support_size)
+                torch.zeros(1, self.full_support_size, device=observation.device)
                 .scatter(1, torch.tensor([[self.full_support_size // 2]]).long(), 1.0)
                 .repeat(len(observation), 1)
-                .to(observation.device)
+                # .to(observation.device)
             )
         )
         return (
@@ -674,7 +672,7 @@ def scalar_to_support(x, support_size):
     x = torch.clamp(x, -support_size, support_size)
     floor = x.floor()
     prob = x - floor
-    logits = torch.zeros(x.shape[0], x.shape[1], 2 * support_size + 1).to(x.device)
+    logits = torch.zeros(x.shape[0], x.shape[1], 2 * support_size + 1, device=x.device)
     logits.scatter_(
         2, (floor + support_size).long().unsqueeze(-1), (1 - prob).unsqueeze(-1)
     )

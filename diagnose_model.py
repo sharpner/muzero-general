@@ -51,7 +51,7 @@ class DiagnoseModel:
             # Generate new root
             value, reward, policy_logits, hidden_state = self.model.recurrent_inference(
                 root.hidden_state,
-                torch.tensor([[action]]).to(root.hidden_state.device),
+                torch.tensor([[action]], device=root.hidden_state.device),
             )
             value = models.support_to_scalar(value, self.config.support_size).item()
             reward = models.support_to_scalar(reward, self.config.support_size).item()
