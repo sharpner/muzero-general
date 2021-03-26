@@ -46,6 +46,7 @@ configuration_4 = {
     'support_size':10,
     'codename':  'vergessen',
     'stacked_observations':0,
+    'dirchlet_alpha': 0.1
 }
 
 configuration_5 = {
@@ -79,6 +80,7 @@ configuration_5 = {
     'support_size':4,
     'codename': 'suckt',
     'stacked_observations':0,
+    'dirchlet_alpha': 0.1
 }
 
 configuration_6 = {
@@ -112,6 +114,7 @@ configuration_6 = {
     'support_size':10,
     'codename':'gpu',
     'stacked_observations':0,
+    'dirchlet_alpha': 0.1
 }
 
 configuration_7 = {
@@ -145,6 +148,7 @@ configuration_7 = {
     'support_size':10,
     'codename':'stacked_advanced_32',
     'stacked_observations':80,
+    'dirchlet_alpha': 0.1
 }
 
 configuration_8 = {
@@ -178,6 +182,7 @@ configuration_8 = {
     'support_size':10,
     'codename':'agatheBower',
     'stacked_observations':80,
+    'dirchlet_alpha': 0.1
 }
 
 configuration_gpu = {
@@ -211,12 +216,48 @@ configuration_gpu = {
     'support_size':10,
     'codename':'tschipiu',
     'stacked_observations':80,
+    'dirchlet_alpha': 0.1
 }
+
+configuration_rampower = {
+    'seed' : 1337,
+    'opponent': 'expert',
+    'max_moves': 81,
+    'num_simulations': 300,
+    'temperature_threshold': None,
+    'channels': 64,
+    'reduced_channels_reward': 4,
+    'reduced_channels_value': 4,
+    'reduced_channels_policy': 8,
+    'resnet_fc_reward_layers': [32],
+    'resnet_fc_value_layers': [32],
+    'resnet_fc_policy_layers': [32],
+    'encoding_size':32,
+    'fc_representation_layers': [16],
+    'fc_dynamics_layers': [16],
+    'fc_reward_layers': [16],
+    'fc_value_layers': [16],
+    'fc_policy_layers': [16],
+    'training_steps':100000,
+    'batch_size':256,
+    'checkpoint_interval':50,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 6000,
+    'num_unroll_steps': 80,
+    'td_steps': 80,
+    'lr_init' : 0.002,
+    'lr_decay_rate': 1,
+    'support_size':10,
+    'codename':'rampower',
+    'stacked_observations':80,
+    'dirchlet_alpha': 0.3
+}
+
 class MuZeroConfig:
     def __init__(self):
         # More information is available here: https://github.com/werner-duvaud/muzero-general/wiki/Hyperparameter-Optimization
 
-        active_configuration = configuration_8
+        active_configuration = configuration_rampower
         print(active_configuration);
 
         self.seed = active_configuration['seed']  # Seed for numpy, torch and the game
@@ -242,7 +283,7 @@ class MuZeroConfig:
         self.temperature_threshold = active_configuration['temperature_threshold']# Number of moves before dropping the temperature given by visit_softmax_temperature_fn to 0 (ie selecting the best action). If None, visit_softmax_temperature_fn is used every time
 
         # Root prior exploration noise
-        self.root_dirichlet_alpha = 0.1
+        self.root_dirichlet_alpha = active_configuration['dirchlet_alpha']
         self.root_exploration_fraction = 0.25
 
         # UCB formula
@@ -298,8 +339,8 @@ class MuZeroConfig:
         self.PER_alpha = 0.5  # How much prioritization is used, 0 corresponding to the uniform case, paper suggests 1
 
         # Reanalyze (See paper appendix Reanalyse)
-        self.use_last_model_value = True  # Use the last model to provide a fresher, stable n-step value (See paper appendix Reanalyze)
-        self.reanalyse_on_gpu = False
+        self.use_last_model_value = False # Use the last model to provide a fresher, stable n-step value (See paper appendix Reanalyze)
+        self.reanalyse_on_gpu = True
 
 
         ### Adjust the self play / training ratio to avoid over/underfitting
