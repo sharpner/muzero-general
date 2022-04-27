@@ -143,7 +143,7 @@ class Trainer:
         device = next(self.model.parameters()).device
         if self.config.PER:
             weight_batch = torch.tensor(weight_batch.copy(), device=device, dtype=torch.float32)
-        observation_batch = torch.tensor(observation_batch, device=device, dtype=torch.float32)
+        observation_batch = torch.tensor(numpy.array(observation_batch), device=device, dtype=torch.float32)
         action_batch = torch.tensor(action_batch, device=device, dtype=torch.long).unsqueeze(-1)
         target_value = torch.tensor(target_value, device=device, dtype=torch.float32)
         target_reward = torch.tensor(target_reward, device=device, dtype=torch.float32)

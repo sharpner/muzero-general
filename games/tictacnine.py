@@ -761,6 +761,8 @@ def is_valid_next_move(board, last_move, next_move, allowed_fields):
       return False
 
     forced_field = int(last_move['position'] % 9)
+    if not forced_field in allowed_fields:
+        forced_field = -1
   else:
     forced_field = -1
 
