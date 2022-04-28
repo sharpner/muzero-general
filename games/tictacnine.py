@@ -770,7 +770,7 @@ def is_valid_next_move(board, last_move, next_move, allowed_fields):
     return False
 
   for allowed in allowed_fields:
-    if forced_field == -1:
+    if forced_field == -1 and played_field == allowed:
       return True
 
     if allowed == forced_field:
