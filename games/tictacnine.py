@@ -1,177 +1,49 @@
 import copy
 import datetime
-import os
 import random
+import pathlib
 
 import numpy
 import torch
 
 from .abstract_game import AbstractGame
 
-def pc(ch):
+def pc(ch, overwrite=None):
+    if overwrite != None:
+        ch = overwrite
+
     if ch == 1:
         return 'X'
     if ch == -1:
         return 'O'
     return '_'
 
-configuration_4 = {
-    'seed' : 0,
+
+# stable on GPU
+# but slow
+configuration_new = {
+    'seed' : 1337,
     'opponent': 'expert',
     'max_moves': 81,
-    'num_simulations': 50,
-    'temperature_threshold': 30,
-    'channels': 128,
-    'reduced_channels_reward': 16,
-    'reduced_channels_value': 16,
-    'reduced_channels_policy': 16,
+    'blocks':6,
+    'weight_decay':1e-4,
+    'num_simulations': 300,
+    'temperature_threshold': None,
+    'channels':128,
+    'reduced_channels_reward': 2,
+    'reduced_channels_value': 2,
+    'reduced_channels_policy': 4,
     'resnet_fc_reward_layers': [64],
     'resnet_fc_value_layers': [64],
     'resnet_fc_policy_layers': [64],
     'encoding_size':32,
-    'fc_representation_layers': [32],
+    'fc_representation_layers': [],
     'fc_dynamics_layers': [64],
     'fc_reward_layers': [64],
-    'fc_value_layers': [32],
-    'fc_policy_layers': [32],
-    'training_steps':10000,
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':100000,
     'batch_size':256,
-    'checkpoint_interval':25,
-    'optimizer': 'SGD',
-    'replay_buffer_size': 6000,
-    'num_unroll_steps':20,
-    'td_steps':20,
-    'lr_init' : 0.003,
-    'lr_decay_rate': 1,
-    'support_size':10,
-    'codename':  'vergessen',
-    'stacked_observations':0,
-    'dirchlet_alpha': 0.1
-}
-
-configuration_5 = {
-    'seed' : 1337,
-    'opponent': 'expert',
-    'max_moves': 81,
-    'num_simulations': 100,
-    'temperature_threshold': 30,
-    'channels': 32,
-    'reduced_channels_reward': 4,
-    'reduced_channels_value': 4,
-    'reduced_channels_policy': 8,
-    'resnet_fc_reward_layers': [32],
-    'resnet_fc_value_layers': [32],
-    'resnet_fc_policy_layers': [32],
-    'encoding_size':32,
-    'fc_representation_layers': [16],
-    'fc_dynamics_layers': [32],
-    'fc_reward_layers': [32],
-    'fc_value_layers': [16],
-    'fc_policy_layers': [16],
-    'training_steps':10000,
-    'batch_size':256,
-    'checkpoint_interval':25,
-    'optimizer': 'SGD',
-    'replay_buffer_size': 6000,
-    'num_unroll_steps':20,
-    'td_steps':20,
-    'lr_init' : 0.002,
-    'lr_decay_rate': 0.997,
-    'support_size':4,
-    'codename': 'suckt',
-    'stacked_observations':0,
-    'dirchlet_alpha': 0.1
-}
-
-configuration_6 = {
-    'seed' : 0 ,
-    'opponent': 'expert',
-    'max_moves': 81,
-    'num_simulations': 250,
-    'temperature_threshold': None,
-    'channels': 32,
-    'reduced_channels_reward': 16,
-    'reduced_channels_value': 16,
-    'reduced_channels_policy': 32,
-    'resnet_fc_reward_layers': [32],
-    'resnet_fc_value_layers': [32],
-    'resnet_fc_policy_layers': [32],
-    'encoding_size':32,
-    'fc_representation_layers': [32],
-    'fc_dynamics_layers': [64],
-    'fc_reward_layers': [64],
-    'fc_value_layers': [32],
-    'fc_policy_layers': [32],
-    'training_steps':25000,
-    'batch_size':256,
-    'checkpoint_interval':25,
-    'optimizer': 'SGD',
-    'replay_buffer_size': 6000,
-    'num_unroll_steps':30,
-    'td_steps':30,
-    'lr_init' : 0.002,
-    'lr_decay_rate': 1,
-    'support_size':10,
-    'codename':'gpu',
-    'stacked_observations':0,
-    'dirchlet_alpha': 0.1
-}
-
-configuration_7 = {
-    'seed' : 0 ,
-    'opponent': 'expert',
-    'max_moves': 81,
-    'num_simulations': 150,
-    'temperature_threshold': None,
-    'channels': 32,
-    'reduced_channels_reward': 16,
-    'reduced_channels_value': 16,
-    'reduced_channels_policy': 32,
-    'resnet_fc_reward_layers': [32],
-    'resnet_fc_value_layers': [32],
-    'resnet_fc_policy_layers': [32],
-    'encoding_size':32,
-    'fc_representation_layers': [32],
-    'fc_dynamics_layers': [64],
-    'fc_reward_layers': [64],
-    'fc_value_layers': [32],
-    'fc_policy_layers': [32],
-    'training_steps':25000,
-    'batch_size':64,
-    'checkpoint_interval':25,
-    'optimizer': 'Adam',
-    'replay_buffer_size': 6000,
-    'num_unroll_steps':30,
-    'td_steps':30,
-    'lr_init' : 0.002,
-    'lr_decay_rate': 1,
-    'support_size':10,
-    'codename':'stacked_advanced_32',
-    'stacked_observations':80,
-    'dirchlet_alpha': 0.1
-}
-
-configuration_8 = {
-    'seed' : 0 ,
-    'opponent': 'expert',
-    'max_moves': 81,
-    'num_simulations': 300,
-    'temperature_threshold': None,
-    'channels': 32,
-    'reduced_channels_reward': 16,
-    'reduced_channels_value': 16,
-    'reduced_channels_policy': 32,
-    'resnet_fc_reward_layers': [32],
-    'resnet_fc_value_layers': [32],
-    'resnet_fc_policy_layers': [32],
-    'encoding_size':32,
-    'fc_representation_layers': [32],
-    'fc_dynamics_layers': [64],
-    'fc_reward_layers': [64],
-    'fc_value_layers': [32],
-    'fc_policy_layers': [32],
-    'training_steps':25000,
-    'batch_size':64,
     'checkpoint_interval':50,
     'optimizer': 'Adam',
     'replay_buffer_size': 6000,
@@ -180,52 +52,370 @@ configuration_8 = {
     'lr_init' : 0.002,
     'lr_decay_rate': 1,
     'support_size':10,
-    'codename':'agatheBower',
+    'codename':'new',
+    'discount':0.997,
     'stacked_observations':80,
-    'dirchlet_alpha': 0.1
+    'dirchlet_alpha': 0.3,
+    'num_workers':4,
+    'gpu_selfplay': True,
+    'use_last_model_value': False,
+    'reanalyse_on_gpu': True,
+    'ratio':None,
 }
 
-configuration_gpu = {
-    'seed' : 0 ,
+configuration_power = {
+    'seed' : 1337,
     'opponent': 'expert',
+    'blocks':3,
     'max_moves': 81,
-    'num_simulations': 200,
+    'num_simulations': 300,
     'temperature_threshold': None,
-    'channels': 32,
+    'channels':64,
+    'weight_decay':1e-5,
     'reduced_channels_reward': 8,
     'reduced_channels_value': 8,
     'reduced_channels_policy': 16,
     'resnet_fc_reward_layers': [16],
     'resnet_fc_value_layers': [16],
     'resnet_fc_policy_layers': [16],
-    'encoding_size':16,
-    'fc_representation_layers': [16],
-    'fc_dynamics_layers': [32],
-    'fc_reward_layers': [32],
-    'fc_value_layers': [16],
-    'fc_policy_layers': [16],
-    'training_steps':100000,
-    'batch_size':32,
-    'checkpoint_interval':50,
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':1000000,
+    'batch_size':256,
+    'checkpoint_interval':20,
     'optimizer': 'Adam',
     'replay_buffer_size': 6000,
-    'num_unroll_steps': 80,
-    'td_steps': 80,
-    'lr_init' : 0.002,
+    'num_unroll_steps': 20,
+    'td_steps': 20,
+    'lr_init' : 0.003,
+    'discount':0.997,
     'lr_decay_rate': 1,
     'support_size':10,
-    'codename':'tschipiu',
-    'stacked_observations':80,
-    'dirchlet_alpha': 0.1
+    'codename':'power',
+    'stacked_observations':0,
+    'dirchlet_alpha': 0.3,
+    'num_workers':3,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':True,
+    'ratio':None,
 }
 
-configuration_rampower = {
-    'seed' : 1337,
+# works, somewhat slow training
+# good config with 400 simulations
+configuration_gpu_train_sgd = {
+    'seed' : 19378,
     'opponent': 'expert',
+    'blocks':4,
+    'max_moves': 81,
+    'num_simulations': 150,
+    'temperature_threshold': None,
+    'channels':64,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 8,
+    'reduced_channels_value': 8,
+    'reduced_channels_policy': 16,
+    'resnet_fc_reward_layers': [64],
+    'resnet_fc_value_layers': [64],
+    'resnet_fc_policy_layers': [64],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':1000000,
+    'batch_size': 384,
+    'checkpoint_interval':20,
+    'optimizer': 'SGD',
+    'replay_buffer_size': 6000,
+    'num_unroll_steps': 32,
+    'td_steps': 81,
+    'lr_init' : 0.03,
+    'lr_decay_rate': 0.997,
+    'support_size':10,
+    'discount':0.997,
+    'codename':'gpu_train_sgd',
+    'stacked_observations':0,
+    'dirchlet_alpha': 0.3,
+    'num_workers':6,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':False,
+    'ratio':None,
+}
+
+# best one yet
+configuration_gpu_train_sgd_full_unroll = {
+    'seed' : 19234,
+    'opponent': 'expert',
+    'blocks':3,
+    'max_moves': 81,
+    'num_simulations': 150,
+    'temperature_threshold': None,
+    'channels':96,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 4,
+    'reduced_channels_value': 4,
+    'reduced_channels_policy': 8,
+    'resnet_fc_reward_layers': [64],
+    'resnet_fc_value_layers': [64],
+    'resnet_fc_policy_layers': [64],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':250000,
+    'batch_size': 128,
+    'checkpoint_interval':20,
+    'optimizer': 'SGD',
+    'replay_buffer_size': 10000,
+    'num_unroll_steps': 81,
+    'discount':0.997,
+    'td_steps': 81,
+    'lr_init' : 0.005,
+    'lr_decay_rate': 0.997,
+    'support_size':10,
+    'codename':'gpu_train_sgd_big_batches',
+    'stacked_observations':0,
+    'dirchlet_alpha': 0.3,
+    'num_workers':6,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':False,
+    'ratio':None,
+}
+
+configuration_gpu_train_sgd_full_unroll_stacked = {
+    'seed' : 19234,
+    'opponent': 'expert',
+    'blocks':3,
+    'max_moves': 81,
+    'num_simulations': 450,
+    'temperature_threshold': None,
+    'channels':96,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 4,
+    'reduced_channels_value': 4,
+    'reduced_channels_policy': 8,
+    'resnet_fc_reward_layers': [64],
+    'resnet_fc_value_layers': [64],
+    'resnet_fc_policy_layers': [64],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':250000,
+    'batch_size': 128,
+    'checkpoint_interval':20,
+    'optimizer': 'SGD',
+    'replay_buffer_size': 10000,
+    'num_unroll_steps': 81,
+    'td_steps': 81,
+    'lr_init' : 0.005,
+    'lr_decay_rate': 0.997,
+    'discount':0.997,
+    'support_size':10,
+    'codename':'stacked',
+    'stacked_observations':1,
+    'dirchlet_alpha': 0.3,
+    'PER_alpha':0.5,
+    'num_workers':5,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':False,
+    'ratio':None,
+}
+
+configuration_desperation = {
+    'seed' : 1923410902,
+    'opponent': 'expert',
+    'blocks':3,
+    'max_moves': 81,
+    'num_simulations': 200,
+    'temperature_threshold': None,
+    'channels':64,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 2,
+    'reduced_channels_value': 2,
+    'reduced_channels_policy': 4,
+    'resnet_fc_reward_layers': [64],
+    'resnet_fc_value_layers': [64],
+    'resnet_fc_policy_layers': [64],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':250000,
+    'batch_size': 192,
+    'checkpoint_interval':20,
+    'optimizer': 'SGD',
+    'replay_buffer_size': 20000,
+    'num_unroll_steps': 81,
+    'td_steps': 81,
+    'lr_init' : 0.01,
+    'discount':0.997,
+    'lr_decay_rate': 0.997,
+    'support_size':10,
+    'codename':'desperation',
+    'stacked_observations':1,
+    'dirchlet_alpha': 1,
+    'PER_alpha':0.95,
+    'num_workers':5,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':False,
+    'ratio':None,
+}
+
+configuration_gpu_a_new_hope = {
+    'seed' : 19234,
+    'opponent': 'expert',
+    'blocks':3,
+    'max_moves': 81,
+    'num_simulations': 250,
+    'temperature_threshold': None,
+    'channels':64,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 4,
+    'reduced_channels_value': 4,
+    'reduced_channels_policy': 8,
+    'resnet_fc_reward_layers': [64],
+    'resnet_fc_value_layers': [64],
+    'resnet_fc_policy_layers': [64],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':1e6,
+    'batch_size': 192,
+    'checkpoint_interval':20,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 20000,
+    'num_unroll_steps': 81,
+    'td_steps': 81,
+    'lr_init' : 0.01,
+    'lr_decay_rate': 0.997,
+    'support_size':10,
+    'codename':'desperation',
+    'stacked_observations':1,
+    'dirchlet_alpha': 0.3,
+    'PER_alpha':0.9,
+    'num_workers':5,
+    'discount':0.997,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':False,
+    'ratio':1,
+}
+
+configuration_empire_strikes_back = {
+    'seed' : 19235,
+    'opponent': 'expert',
+    'blocks':6,
+    'max_moves': 81,
+    'num_simulations': 200,
+    'temperature_threshold': None,
+    'channels':48,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 4,
+    'reduced_channels_value': 4,
+    'reduced_channels_policy': 8,
+    'resnet_fc_reward_layers': [64],
+    'resnet_fc_value_layers': [64],
+    'resnet_fc_policy_layers': [64],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':1e6,
+    'batch_size': 128,
+    'checkpoint_interval':20,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 20000,
+    'num_unroll_steps': 81,
+    'td_steps': 81,
+    'lr_init' : 0.003,
+    'lr_decay_rate': 0.997,
+    'support_size':10,
+    'discount':0.98,
+    'codename':'empire-strikes-back',
+    'stacked_observations':1,
+    'dirchlet_alpha': 0.3,
+    'PER_alpha':0.9,
+    'num_workers':5,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':False,
+    'ratio':None,
+}
+
+configuration_return_of_the_sith = {
+    'seed' : 19236,
+    'opponent': 'expert',
+    'blocks':6,
     'max_moves': 81,
     'num_simulations': 300,
     'temperature_threshold': None,
-    'channels': 64,
+    'channels':32,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 4,
+    'reduced_channels_value': 4,
+    'reduced_channels_policy': 8,
+    'resnet_fc_reward_layers': [64],
+    'resnet_fc_value_layers': [64],
+    'resnet_fc_policy_layers': [64],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [64],
+    'fc_reward_layers': [64],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':1e6,
+    'batch_size': 128,
+    'checkpoint_interval':20,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 20000,
+    'num_unroll_steps': 81,
+    'td_steps': 81,
+    'lr_init' : 0.003,
+    'lr_decay_rate': 0.997,
+    'support_size':10,
+    'discount':0.98,
+    'codename':'return-of-the-sith',
+    'stacked_observations':1,
+    'dirchlet_alpha': 0.3,
+    'PER_alpha':0.9,
+    'num_workers':5,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':True,
+    'ratio':None,
+}
+
+configuration_minimal = {
+    'seed' : 0,
+    'opponent': 'random',
+    'blocks':3,
+    'max_moves': 81,
+    'num_simulations': 300,
+    'temperature_threshold': None,
+    'channels':32,
+    'weight_decay':1e-5,
     'reduced_channels_reward': 4,
     'reduced_channels_value': 4,
     'reduced_channels_policy': 8,
@@ -233,38 +423,127 @@ configuration_rampower = {
     'resnet_fc_value_layers': [32],
     'resnet_fc_policy_layers': [32],
     'encoding_size':32,
-    'fc_representation_layers': [16],
-    'fc_dynamics_layers': [16],
-    'fc_reward_layers': [16],
-    'fc_value_layers': [16],
-    'fc_policy_layers': [16],
-    'training_steps':100000,
-    'batch_size':256,
-    'checkpoint_interval':50,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [32],
+    'fc_reward_layers': [32],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':1e6,
+    'batch_size': 128,
+    'checkpoint_interval':20,
     'optimizer': 'Adam',
-    'replay_buffer_size': 6000,
-    'num_unroll_steps': 80,
-    'td_steps': 80,
-    'lr_init' : 0.002,
-    'lr_decay_rate': 1,
+    'replay_buffer_size': 7000,
+    'num_unroll_steps': 81,
+    'td_steps': 81,
+    'lr_init' : 0.003,
+    'lr_decay_rate': 0.997,
     'support_size':10,
-    'codename':'rampower',
-    'stacked_observations':80,
-    'dirchlet_alpha': 0.3
+    'discount':0.98,
+    'stacked_observations':1,
+    'dirchlet_alpha': 0.3,
+    'PER_alpha':0.9,
+    'num_workers':5,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':True,
+    'ratio':None,
 }
 
+configuration_6blocks = {
+    'seed' : 0,
+    'opponent': 'random',
+    'blocks':6,
+    'max_moves': 81,
+    'num_simulations': 300,
+    'temperature_threshold': None,
+    'channels':32,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 4,
+    'reduced_channels_value': 4,
+    'reduced_channels_policy': 8,
+    'resnet_fc_reward_layers': [32],
+    'resnet_fc_value_layers': [32],
+    'resnet_fc_policy_layers': [32],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [32],
+    'fc_reward_layers': [32],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':1e6,
+    'batch_size': 128,
+    'checkpoint_interval':20,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 7000,
+    'num_unroll_steps': 81,
+    'td_steps': 81,
+    'lr_init' : 0.003,
+    'lr_decay_rate': 0.997,
+    'support_size':10,
+    'discount':0.98,
+    'stacked_observations':1,
+    'dirchlet_alpha': 0.3,
+    'PER_alpha':0.9,
+    'num_workers':5,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':True,
+    'ratio':None,
+}
+
+configuration_6blocks48 = {
+    'seed' : 0,
+    'opponent': 'random',
+    'blocks':6,
+    'max_moves': 81,
+    'num_simulations': 100,
+    'temperature_threshold': None,
+    'channels':32,
+    'weight_decay':1e-5,
+    'reduced_channels_reward': 4,
+    'reduced_channels_value': 4,
+    'reduced_channels_policy': 8,
+    'resnet_fc_reward_layers': [32],
+    'resnet_fc_value_layers': [32],
+    'resnet_fc_policy_layers': [32],
+    'encoding_size':32,
+    'fc_representation_layers': [],
+    'fc_dynamics_layers': [32],
+    'fc_reward_layers': [32],
+    'fc_value_layers': [],
+    'fc_policy_layers': [],
+    'training_steps':5e5,
+    'batch_size': 192,
+    'checkpoint_interval':20,
+    'optimizer': 'Adam',
+    'replay_buffer_size': 7000,
+    'num_unroll_steps': 81,
+    'td_steps': 81,
+    'lr_init' : 0.003,
+    'lr_decay_rate': 0.997,
+    'support_size':10,
+    'discount':0.98,
+    'stacked_observations':1,
+    'dirchlet_alpha': 0.3,
+    'PER_alpha':0.9,
+    'num_workers':5,
+    'gpu_selfplay': False,
+    'use_last_model_value':True,
+    'reanalyse_on_gpu':False,
+    'ratio':None,
+}
 class MuZeroConfig:
     def __init__(self):
         # More information is available here: https://github.com/werner-duvaud/muzero-general/wiki/Hyperparameter-Optimization
 
-        active_configuration = configuration_rampower
-        print(active_configuration);
+        active_configuration = configuration_6blocks48
+        print(active_configuration)
 
         self.seed = active_configuration['seed']  # Seed for numpy, torch and the game
-        self.max_num_gpus = None # Fix the maximum number of GPUs to use. It's usually faster to use a single GPU (set it to 1) if it has enough memory. None will use every GPUs available
+        self.max_num_gpus = 1 # Fix the maximum number of GPUs to use. It's usually faster to use a single GPU (set it to 2) if it has enough memory. None will use every GPUs available
 
         ### Game
-        self.observation_shape = (3, 9,9)  # Dimensions of the game observation, must be 3D (channel, height, width). For a 1D array, please reshape it to (1, 1, length of array)
+        self.observation_shape = (3,9,9)  # Dimensions of the game observation, must be 3D (channel, height, width). For a 1D array, please reshape it to (1, 1, length of array)
         self.action_space = list(range(9 * 9))  # Fixed list of all possible actions. You should only edit the length
         self.players = list(range(2))  # List of players. You should only edit the length
         self.stacked_observations = active_configuration['stacked_observations']  # Number of previous observations and previous actions to add to the current observation
@@ -275,11 +554,11 @@ class MuZeroConfig:
         # self.opponent = "random"
 
         ### Self-Play
-        self.num_workers = 4  # Number of simultaneous threads/workers self-playing to feed the replay buffer
-        self.selfplay_on_gpu = True
+        self.num_workers = active_configuration['num_workers']  # Number of simultaneous threads/workers self-playing to feed the replay buffer
+        self.selfplay_on_gpu = active_configuration['gpu_selfplay']
         self.max_moves = active_configuration['max_moves'] # Maximum number of moves if game is not finished before
         self.num_simulations = active_configuration['num_simulations']# Number of future moves self-simulated
-        self.discount = 1 #0.997  # Chronological discount of the reward
+        self.discount = 0.997 #0.997  # Chronological discount of the reward
         self.temperature_threshold = active_configuration['temperature_threshold']# Number of moves before dropping the temperature given by visit_softmax_temperature_fn to 0 (ie selecting the best action). If None, visit_softmax_temperature_fn is used every time
 
         # Root prior exploration noise
@@ -296,7 +575,7 @@ class MuZeroConfig:
 
         # Residual Network
         self.downsample = False  # Downsample observations before representation network, False / "CNN" (lighter) / "resnet" (See paper appendix Network Architecture)
-        self.blocks = 6  # Number of blocks in the ResNet
+        self.blocks = active_configuration['blocks']  # Number of blocks in the ResNet
         self.channels = active_configuration['channels'] # Number of channels in the ResNet
         self.reduced_channels_reward = active_configuration['reduced_channels_reward']# Number of channels in reward head
         self.reduced_channels_value = active_configuration['reduced_channels_value']  # Number of channels in value head
@@ -314,7 +593,7 @@ class MuZeroConfig:
         self.fc_policy_layers = active_configuration['fc_policy_layers']  # Define the hidden layers in the policy network
 
         ### Training
-        self.results_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../results", os.path.basename(__file__)[:-3], active_configuration['codename'], datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S"))  # Path to store the model weights and TensorBoard logs
+        self.results_path = pathlib.Path(__file__).resolve().parents[1] / "results" / pathlib.Path(__file__).stem / datetime.datetime.now().strftime("%Y-%m-%d--%H-%M-%S")  # Path to store the model weights and TensorBoard logs
         self.save_model = True  # Save the checkpoint in results_path as model.checkpoint
         self.training_steps = active_configuration['training_steps']# Total number of training steps (ie weights update according to a batch)
         self.batch_size = active_configuration['batch_size']# Number of parts of games to train on at each training step
@@ -323,7 +602,7 @@ class MuZeroConfig:
         self.train_on_gpu = torch.cuda.is_available()  # Train on GPU if available
 
         self.optimizer = active_configuration['optimizer']  # "Adam" or "SGD". Paper uses SGD
-        self.weight_decay = 1e-4  # L2 weights regularization
+        self.weight_decay = active_configuration['weight_decay'] # L2 weights regularization
         self.momentum = 0.9  # Used only if optimizer is SGD
 
         # Exponential learning rate schedule
@@ -336,17 +615,17 @@ class MuZeroConfig:
         self.num_unroll_steps = active_configuration['num_unroll_steps'] #20  # Number of game moves to keep for every batch element
         self.td_steps = active_configuration['td_steps'] #20  # Number of steps in the future to take into account for calculating the target value
         self.PER = True  # Prioritized Replay (See paper appendix Training), select in priority the elements in the replay buffer which are unexpected for the network
-        self.PER_alpha = 0.5  # How much prioritization is used, 0 corresponding to the uniform case, paper suggests 1
+        self.PER_alpha = active_configuration['PER_alpha']  # How much prioritization is used, 0 corresponding to the uniform case, paper suggests 1
 
         # Reanalyze (See paper appendix Reanalyse)
-        self.use_last_model_value = False # Use the last model to provide a fresher, stable n-step value (See paper appendix Reanalyze)
-        self.reanalyse_on_gpu = True
+        self.use_last_model_value =active_configuration['use_last_model_value'] # Use the last model to provide a fresher, stable n-step value (See paper appendix Reanalyze)
+        self.reanalyse_on_gpu = active_configuration['reanalyse_on_gpu']
 
 
         ### Adjust the self play / training ratio to avoid over/underfitting
         self.self_play_delay = 0  # Number of seconds to wait after each played game
         self.training_delay = 0  # Number of seconds to wait after each training step
-        self.ratio = None  # Desired training steps per self played step ratio. Equivalent to a synchronous version, training can take much longer. Set it to None to disable it
+        self.ratio = active_configuration['ratio']# Desired training steps per self played step ratio. Equivalent to a synchronous version, training can take much longer. Set it to None to disable it
 
 
     def visit_softmax_temperature_fn(self, trained_steps):
@@ -357,13 +636,13 @@ class MuZeroConfig:
         Returns:
             Positive float.
         """
-        return 1.0
-        # if trained_steps < 0.5 * self.training_steps:
-            # return 1.0
-        # elif trained_steps < 0.75 * self.training_steps:
-            # return 0.5
-        # else:
-            # return 0.25
+        # return 1.0
+        if trained_steps < 0.5 * self.training_steps:
+            return 1.0
+        elif trained_steps < 0.75 * self.training_steps:
+            return 0.5
+        else:
+            return 0.25
 
 class Game(AbstractGame):
     """
@@ -518,25 +797,25 @@ class TicTacNine:
         allowed_fields = playable_fields(board)
 
         for i in range(81):
-            last_move = None
+            lm = None
             if self.last_move != None:
-                last_move = create_move(-1, self.last_move)
+                lm = create_move(-1, self.last_move)
 
-            if is_valid_next_move(board,last_move, create_move(1, i), allowed_fields):
+            if is_valid_next_move(board,lm, create_move(1, i), allowed_fields):
                 legal.append(i)
 
         return legal
 
     def expert_action(self):
         board = copy.deepcopy(self.board).reshape(81)
-        legal_actions = self.legal_actions();
-        best_action = legal_actions[0];
-        expert = self.player *-1;
+        legal_actions = self.legal_actions()
+        best_action = legal_actions[0]
+        expert = self.player *-1
 
         score = -20
 
         for legal_action in self.legal_actions():
-            board[legal_action] = expert;
+            board[legal_action] = expert
 
             # if this moves wins the game for use, best move!
             if is_won(board) == expert:
@@ -556,7 +835,7 @@ class TicTacNine:
 
             # (1b) center bias
             if forced_field == 4:
-                    move_score += 3
+                move_score += 3
 
             # (1b) corner bias could also be combined with center bias
             # just drop the first condition then
@@ -611,38 +890,50 @@ class TicTacNine:
 
     def render(self):
         board = self.board.reshape(81)
+        wonFields  = 9 * [None]
+        for i in range(9):
+            won = field_winner(board[i*9:(i*9)+9])
+            if won != 0:
+                wonFields[i] = won
+
         for i in range(3):
             m = i * 3
-            print(f'{pc(board[m])}', end='')
-            print(f'{pc(board[1+m])}', end='')
-            print(f'{pc(board[2+m])}', end='')
+            o = wonFields[int((0+m)/9)]
+            print(f'{pc(board[m], o)}', end='')
+            print(f'{pc(board[1+m], o)}', end='')
+            print(f'{pc(board[2+m], o)}', end='')
             print("|", end='')
 
-            print(f'{pc(board[9+m])}', end='')
-            print(f'{pc(board[10+m])}', end='')
-            print(f'{pc(board[11+m])}', end='')
+            o = wonFields[int((9+m)/9)]
+            print(f'{pc(board[9+m], o)}', end='')
+            print(f'{pc(board[10+m], o)}', end='')
+            print(f'{pc(board[11+m], o)}', end='')
 
             print("|", end='')
 
-            print(f'{pc(board[18+m])}', end='')
-            print(f'{pc(board[19+m])}', end='')
-            print(f'{pc(board[20+m])}', end='')
+            o = wonFields[int((18+m)/9)]
+            print(f'{pc(board[18+m], o)}', end='')
+            print(f'{pc(board[19+m], o)}', end='')
+            print(f'{pc(board[20+m], o)}', end='')
             print("|\n", end='')
 
         print("----------------------\n", end='')
 
         for i in range(3):
             m = i * 3
+            o = wonFields[int((27+m)/9)]
             print(f'{pc(board[27+m])}', end='')
             print(f'{pc(board[28+m])}', end='')
             print(f'{pc(board[29+m])}', end='')
             print("|", end='')
 
+            o = wonFields[int((36+m)/9)]
             print(f'{pc(board[36+m])}', end='')
             print(f'{pc(board[37+m])}', end='')
             print(f'{pc(board[38+m])}', end='')
             print("|", end='')
 
+            o = wonFields[int((45+m)/9)]
             print(f'{pc(board[45+m])}', end='')
             print(f'{pc(board[46+m])}', end='')
             print(f'{pc(board[47+m])}', end='')
@@ -652,22 +943,27 @@ class TicTacNine:
 
         for i in range(3):
             m = i * 3
-            print(f'{pc(board[54+m])}', end='')
-            print(f'{pc(board[55+m])}', end='')
-            print(f'{pc(board[56+m])}', end='')
+
+            o = wonFields[int((54+m)/9)]
+            print(f'{pc(board[54+m], o)}', end='')
+            print(f'{pc(board[55+m], o)}', end='')
+            print(f'{pc(board[56+m], o)}', end='')
             print("|", end='')
 
-            print(f'{pc(board[63+m])}', end='')
-            print(f'{pc(board[64+m])}', end='')
-            print(f'{pc(board[65+m])}', end='')
+            o = wonFields[int((63+m)/9)]
+            print(f'{pc(board[63+m], o)}', end='')
+            print(f'{pc(board[64+m], o)}', end='')
+            print(f'{pc(board[65+m], o)}', end='')
             print("|", end='')
 
-            print(f'{pc(board[72+m])}', end='')
-            print(f'{pc(board[73+m])}', end='')
-            print(f'{pc(board[74+m])}', end='')
+            o = wonFields[int((72+m)/9)]
+            print(f'{pc(board[72+m], o)}', end='')
+            print(f'{pc(board[73+m], o)}', end='')
+            print(f'{pc(board[74+m], o)}', end='')
             print("|\n", end='')
 
         print("----------------------\n", end='')
+
 
 # just for readability, won't make sense to change as long as winlines is hardcoded
 BOARD_SIZE = 81
@@ -752,8 +1048,8 @@ def is_valid_next_move(board, last_move, next_move, allowed_fields):
 
   if last_move != None:
     # cannot play twice
-    if last_move['color'] == next_move['color']:
-      return False
+    # if last_move['color'] == next_move['color']:
+      # return False
 
     # guard against same position, but should not be possible if board
     # is saved correctly
