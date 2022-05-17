@@ -403,7 +403,7 @@ configuration_colab = {
     'num_workers':5,
     'gpu_selfplay': False,
     'use_last_model_value':True,
-    'reanalyse_on_gpu':True,
+    'reanalyse_on_gpu':False,
     'ratio':None,
 }
 
