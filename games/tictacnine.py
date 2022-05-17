@@ -371,7 +371,7 @@ configuration_colab = {
     'max_moves': 81,
     'num_simulations': 250,
     'temperature_threshold': None,
-    'channels':64,
+    'channels':32,
     'weight_decay':1e-5,
     'reduced_channels_reward': 4,
     'reduced_channels_value': 4,
