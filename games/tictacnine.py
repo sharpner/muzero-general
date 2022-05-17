@@ -364,14 +364,14 @@ configuration_empire_strikes_back = {
     'ratio':None,
 }
 
-configuration_return_of_the_sith = {
+configuration_colab = {
     'seed' : 19236,
     'opponent': 'expert',
     'blocks':6,
     'max_moves': 81,
-    'num_simulations': 300,
+    'num_simulations': 250,
     'temperature_threshold': None,
-    'channels':32,
+    'channels':64,
     'weight_decay':1e-5,
     'reduced_channels_reward': 4,
     'reduced_channels_value': 4,
@@ -386,17 +386,17 @@ configuration_return_of_the_sith = {
     'fc_value_layers': [],
     'fc_policy_layers': [],
     'training_steps':1e6,
-    'batch_size': 128,
+    'batch_size': 256,
     'checkpoint_interval':20,
     'optimizer': 'Adam',
-    'replay_buffer_size': 20000,
+    'replay_buffer_size': 10000,
     'num_unroll_steps': 81,
     'td_steps': 81,
-    'lr_init' : 0.003,
+    'lr_init' : 0.002,
     'lr_decay_rate': 0.997,
     'support_size':10,
-    'discount':0.98,
-    'codename':'return-of-the-sith',
+    'discount':0.997,
+    'codename':'colab',
     'stacked_observations':1,
     'dirchlet_alpha': 0.3,
     'PER_alpha':0.9,
@@ -532,11 +532,12 @@ configuration_6blocks48 = {
     'reanalyse_on_gpu':False,
     'ratio':None,
 }
+
 class MuZeroConfig:
     def __init__(self):
         # More information is available here: https://github.com/werner-duvaud/muzero-general/wiki/Hyperparameter-Optimization
 
-        active_configuration = configuration_6blocks48
+        active_configuration = configuration_colab
         print(active_configuration)
 
         self.seed = active_configuration['seed']  # Seed for numpy, torch and the game
